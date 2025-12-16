@@ -11,7 +11,23 @@ export interface Profile {
   email: string
   full_name: string | null
   avatar_url: string | null
+  phone: string | null
+  city: string | null
   created_at: string
+}
+
+export interface RealtorProfile {
+  id: string
+  license_number: string
+  license_url: string
+  is_verified: boolean
+  hourly_rate: number | null
+  broker_since: string | null
+  languages: string[] | null
+  bio: string | null
+  created_at: string
+  // Joins
+  profiles?: Profile
 }
 
 export interface Listing {
@@ -23,7 +39,11 @@ export interface Listing {
   source_url: string | null
   contact_email: string
   listing_type: 'rent' | 'sale'
+  bedrooms: number | null
+  bathrooms: number | null
+  sqft: number | null
   created_at: string
+  assigned_realtor_id?: string | null
 }
 
 export interface AvailabilityWindow {
@@ -45,6 +65,9 @@ export interface Appointment {
   end_time: string // ISO string
   status: 'pending' | 'confirmed' | 'cancelled'
   created_at: string
+  // Joins
+  listings?: Listing
+  profiles?: Profile
 }
 
 export interface TimeSlot {
@@ -52,4 +75,3 @@ export interface TimeSlot {
   end: Date
   available: boolean
 }
-

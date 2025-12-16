@@ -45,10 +45,10 @@ export default function IncomingRequestCard({ request }: IncomingRequestProps) {
         <div className="text-right flex flex-col items-end gap-2">
           <div>
             <p className="font-bold text-gray-900">
-              {new Date(request.start_time).toLocaleDateString()}
+              {new Date(request.start_time).toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' })}
             </p>
             <p className="text-sm text-gray-500">
-              {new Date(request.start_time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+              {new Date(request.start_time).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
             </p>
           </div>
 

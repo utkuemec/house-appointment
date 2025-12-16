@@ -3,20 +3,36 @@
 import { useState } from 'react';
 import { Listing } from '../types';
 import BookingModal from './BookingModal';
-
 import Link from 'next/link';
+import FilterBar from './FilterBar';
 
 export default function MarketplaceFeed({ listings }: { listings: Listing[] }) {
   const [selectedListing, setSelectedListing] = useState<Listing | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [filters, setFilters] = useState({
+    minPrice: '',
+    maxPrice: '',
+    beds: '',
+    baths: '',
+  });
 
-  const filteredListings = listings.filter(listing => 
-    listing.address.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (listing.description && listing.description.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
+  const filteredListings = listings.filter(listing => {
+    // Text Search
+    const matchesSearch = listing.address.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (listing.description && listing.description.toLowerCase().includes(searchQuery.toLowerCase()));
 
-  const rentListings = filteredListings.filter(l => l.listing_type === 'rent' || !l.listing_type);
-  const saleListings = filteredListings.filter(l => l.listing_type === 'sale');
+    // Advanced Filters
+    const price = listing.price || 0;
+    const beds = listing.bedrooms || 0;
+    const baths = listing.bathrooms || 0;
+
+    const matchesMinPrice = filters.minPrice ? price >= parseInt(filters.minPrice) : true;
+    const matchesMaxPrice = filters.maxPrice ? price <= parseInt(filters.maxPrice) : true;
+    const matchesBeds = filters.beds ? beds >= parseInt(filters.beds) : true;
+    const matchesBaths = filters.baths ? baths >= parseInt(filters.baths) : true;
+
+    return matchesSearch && matchesMinPrice && matchesMaxPrice && matchesBeds && matchesBaths;
+  });
 
   const ListingCard = ({ listing }: { listing: Listing }) => (
     <Link href={`/listing/${listing.id}`} key={listing.id} className="flex flex-col bg-white border rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 group">
@@ -57,24 +73,28 @@ export default function MarketplaceFeed({ listings }: { listings: Listing[] }) {
   );
 
   return (
-    <div className="py-8">
-      {/* Search Bar */}
-      <div className="mb-12 relative max-w-xl">
-        <input
-          type="text"
-          placeholder="Search by address, neighborhood, or keywords..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full px-5 py-3 pl-12 rounded-xl border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-        />
-        <svg 
-          className="w-5 h-5 text-gray-400 absolute left-4 top-1/2 transform -translate-y-1/2"
-          fill="none" 
-          stroke="currentColor" 
-          viewBox="0 0 24 24"
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-        </svg>
+    <div className="py-4">
+      {/* Search Bar & Filters */}
+      <div className="mb-12 space-y-6">
+        <div className="relative max-w-xl">
+          <input
+            type="text"
+            placeholder="Search by address, neighborhood, or keywords..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full px-5 py-3 pl-12 rounded-xl border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+          />
+          <svg 
+            className="w-5 h-5 text-gray-400 absolute left-4 top-1/2 transform -translate-y-1/2"
+            fill="none" 
+            stroke="currentColor" 
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </div>
+
+        <FilterBar onFilterChange={setFilters} />
       </div>
 
       {/* Results Grid */}
@@ -89,40 +109,10 @@ export default function MarketplaceFeed({ listings }: { listings: Listing[] }) {
           </button>
         </div>
       ) : (
-        <div className="space-y-16">
-          {/* FOR RENT SECTION */}
-          {rentListings.length > 0 && (
-            <section>
-              <div className="flex items-center gap-3 mb-6">
-                <h2 className="text-3xl font-bold text-gray-900">For Rent</h2>
-                <span className="bg-blue-100 text-blue-800 text-sm font-medium px-2.5 py-0.5 rounded-full">
-                  {rentListings.length}
-                </span>
-              </div>
-              <div className="grid gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-                {rentListings.map((listing) => (
-                  <ListingCard key={listing.id} listing={listing} />
-                ))}
-              </div>
-            </section>
-          )}
-
-          {/* FOR SALE SECTION */}
-          {saleListings.length > 0 && (
-            <section>
-              <div className="flex items-center gap-3 mb-6">
-                <h2 className="text-3xl font-bold text-gray-900">For Sale</h2>
-                <span className="bg-purple-100 text-purple-800 text-sm font-medium px-2.5 py-0.5 rounded-full">
-                  {saleListings.length}
-                </span>
-              </div>
-              <div className="grid gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-                {saleListings.map((listing) => (
-                  <ListingCard key={listing.id} listing={listing} />
-                ))}
-              </div>
-            </section>
-          )}
+        <div className="grid gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+          {filteredListings.map((listing) => (
+            <ListingCard key={listing.id} listing={listing} />
+          ))}
         </div>
       )}
     </div>

@@ -97,7 +97,11 @@ export default function AvailabilityModal({
 
     // 2. Insert ALL new slots
     if (slots.length > 0) {
-      const dayOfWeek = new Date(selectedDate).getDay() + 1; 
+      // Fix: getDay() returns 0-6. We need 0-6 for the constraint.
+      // Also, ensure we parse the date in local time to avoid timezone shifts
+      const [year, month, day] = selectedDate.split('-').map(Number);
+      const localDate = new Date(year, month - 1, day);
+      const dayOfWeek = localDate.getDay();
       
       const rowsToInsert = slots.map(slot => ({
         listing_id: listing.id,

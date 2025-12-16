@@ -46,6 +46,9 @@ export async function createListing(formData: FormData) {
   const price = parseInt(formData.get('price') as string);
   const description = formData.get('description') as string;
   const listingType = (formData.get('listingType') as 'rent' | 'sale') || 'rent';
+  const bedrooms = parseInt(formData.get('bedrooms') as string) || 0;
+  const bathrooms = parseFloat(formData.get('bathrooms') as string) || 0;
+  const sqft = parseInt(formData.get('sqft') as string) || 0;
   
   // Handle both manual URL and uploaded images
   const imageUrl = formData.get('imageUrl') as string;
@@ -73,6 +76,9 @@ export async function createListing(formData: FormData) {
     images_json: images,
     contact_email: user.email,
     listing_type: listingType,
+    bedrooms,
+    bathrooms,
+    sqft,
     // Generate a pseudo-source-url for internal listings to satisfy uniqueness constraint
     source_url: `https://viewto.app/internal/${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
   };
